@@ -1,0 +1,88 @@
+### AnchorzUp API Test Collection
+### Base URL Configuration
+@baseUrl = https://localhost:52053
+@httpBaseUrl = http://localhost:52054
+
+### Variables for testing
+@testId = 00000000-0000-0000-0000-000000000000
+
+### 1. Create a new short URL
+POST {{baseUrl}}/api/shorturl/create
+Content-Type: application/json
+
+{
+  "originalUrl": "https://www.google.com",
+  "expiresAt": "2025-12-31T23:59:59Z"
+}
+
+### 2. Create a short URL without expiration
+POST {{baseUrl}}/api/shorturl/create
+Content-Type: application/json
+
+{
+  "originalUrl": "https://github.com"
+}
+
+### 3. Create a short URL with invalid URL (should return 400)
+POST {{baseUrl}}/api/shorturl/create
+Content-Type: application/json
+
+{
+  "originalUrl": "not-a-valid-url"
+}
+
+### 4. Get all short URLs
+GET {{baseUrl}}/api/shorturl
+
+### 5. Get a specific short URL by code
+GET {{baseUrl}}/api/shorturl/rlYgu7iG
+
+### 6. Get a non-existent short URL (should return 404)
+GET {{baseUrl}}/api/shorturl/nonexistent
+
+### 7. Delete a short URL by ID
+DELETE {{baseUrl}}/api/shorturl/93b05b01-455a-43f9-a7f4-2ccfcd2d5c4d
+
+### 8. Delete a non-existent short URL (should return 500)
+DELETE {{baseUrl}}/api/shorturl/00000000-0000-0000-0000-000000000001
+
+### ============================================
+### QR CODE ENDPOINTS
+### ============================================
+
+### 9. Get QR code for a short URL
+GET {{baseUrl}}/api/shorturl/qr/{{testShortCode}}
+
+### 10. Get QR code for non-existent short URL (should return 500)
+GET {{baseUrl}}/api/shorturl/qr/nonexistent
+
+### ============================================
+### REDIRECT ENDPOINTS
+### ============================================
+
+### 11. Redirect to original URL (this will perform a redirect)
+GET {{baseUrl}}/{{testShortCode}}
+
+### 12. Redirect to non-existent short URL (should return 404)
+GET {{baseUrl}}/nonexistent
+
+### ============================================
+### HTTP (NON-SSL) ENDPOINTS FOR TESTING
+### ============================================
+
+### 13. Create short URL via HTTP
+POST {{httpBaseUrl}}/api/shorturl/create
+Content-Type: application/json
+
+{
+  "originalUrl": "https://www.microsoft.com"
+}
+
+### 14. Get all short URLs via HTTP
+GET {{httpBaseUrl}}/api/shorturl
+
+### 15. Redirect via HTTP
+GET {{httpBaseUrl}}/{{testShortCode}}
+
+
+

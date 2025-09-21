@@ -1,0 +1,15 @@
+services:
+  # Full application stack
+  anchorzup:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: anchorzup-app
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Data Source=anchorzup.db
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    profiles:
+      - prod
