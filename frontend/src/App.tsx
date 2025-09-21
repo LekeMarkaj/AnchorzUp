@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2, QrCode } from 'lucide-react';
+import { Trash2, QrCode, Menu, X } from 'lucide-react';
 import UrlShortener from './components/UrlShortener';
 import QrCodeModal from './components/QrCodeModal';
+import DeleteConfirmationModal from './components/DeleteConfirmationModal';
+import SuccessToast from './components/SuccessToast';
+import ErrorToast from './components/ErrorToast';
 import { ShortUrlResponse, shortUrlApi } from './services/api';
 import './App.css';
 import logoImage from './assets/AnchorzUpLogo.jpg';
@@ -11,9 +14,28 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [qrModalOpen, setQrModalOpen] = useState(false);
   const [selectedUrl, setSelectedUrl] = useState<ShortUrlResponse | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [urlToDelete, setUrlToDelete] = useState<ShortUrlResponse | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [showErrorToast, setShowErrorToast] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     loadUrls();
+  }, []);
+
+  // Auto-close sidebar on desktop screens
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) { // lg breakpoint
+        setSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const loadUrls = async () => {
@@ -29,17 +51,48 @@ function App() {
 
   const handleUrlCreated = (newUrl: ShortUrlResponse) => {
     setUrls(prev => [newUrl, ...prev]);
+    setSuccessMessage('Short URL created successfully!');
+    setShowSuccessToast(true);
   };
 
-  const handleUrlDeleted = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this short URL?')) {
-      try {
-        await shortUrlApi.deleteShortUrl(id);
-        setUrls(prev => prev.filter(url => url.id !== id));
-      } catch (err) {
-        console.error('Failed to delete URL: ', err);
-      }
+  const handleCloseSuccessToast = () => {
+    setShowSuccessToast(false);
+    setSuccessMessage('');
+  };
+
+  const handleCloseErrorToast = () => {
+    setShowErrorToast(false);
+    setErrorMessage('');
+  };
+
+  const handleError = (error: string) => {
+    setErrorMessage(error);
+    setShowErrorToast(true);
+  };
+
+  const handleDeleteClick = (url: ShortUrlResponse) => {
+    setUrlToDelete(url);
+    setDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!urlToDelete) return;
+    
+    try {
+      await shortUrlApi.deleteShortUrl(urlToDelete.id);
+      setUrls(prev => prev.filter(url => url.id !== urlToDelete.id));
+      setSuccessMessage('Short URL deleted successfully!');
+      setShowSuccessToast(true);
+    } catch (err) {
+      console.error('Failed to delete URL: ', err);
+      setErrorMessage('Failed to delete short URL. Please try again.');
+      setShowErrorToast(true);
     }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setDeleteModalOpen(false);
+    setUrlToDelete(null);
   };
 
   const handleQrCodeClick = (url: ShortUrlResponse) => {
@@ -54,8 +107,29 @@ function App() {
 
   return (
     <div className="min-h-screen bg-white flex">
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md border border-gray-200 hover:bg-gray-50 transition-colors"
+      >
+        {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
+      </button>
+
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <div className="w-80 bg-gray-50 border-r border-gray-200 flex flex-col">
+      <div className={`
+        fixed lg:static inset-y-0 left-0 z-50
+        w-80 bg-gray-50 border-r border-gray-200 flex flex-col
+        transform transition-transform duration-300 ease-in-out
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
         {/* Logo */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-center">
@@ -67,7 +141,7 @@ function App() {
         </div>
 
         {/* My shortened URLs section */}
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-6 overflow-y-auto">
           <h2 className="text-lg font-bold text-gray-900 mb-4 text-center">My shortened URLs</h2>
           
           {isLoading ? (
@@ -101,7 +175,7 @@ function App() {
                         <QrCode className="h-4 w-4" />
                       </button>
                       <button
-                        onClick={() => handleUrlDeleted(url.id)}
+                        onClick={() => handleDeleteClick(url)}
                         className="p-1 text-gray-400 hover:text-red-600 transition-all"
                         title="Delete URL"
                       >
@@ -122,11 +196,11 @@ function App() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 bg-white">
-        <div className="p-8">
+      <div className="flex-1 bg-white lg:ml-0">
+        <div className="p-8 pt-16 lg:pt-8">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-semibold text-gray-900 mb-8 text-left">URL Shortener</h2>
-            <UrlShortener onUrlCreated={handleUrlCreated} />
+            <UrlShortener onUrlCreated={handleUrlCreated} onError={handleError} />
           </div>
         </div>
       </div>
@@ -140,6 +214,33 @@ function App() {
           shortUrl={selectedUrl.shortUrl}
         />
       )}
+
+      {/* Delete Confirmation Modal */}
+      {urlToDelete && (
+        <DeleteConfirmationModal
+          isOpen={deleteModalOpen}
+          onClose={handleCloseDeleteModal}
+          onConfirm={handleDeleteConfirm}
+          shortUrl={urlToDelete.shortUrl}
+          clickCount={urlToDelete.clickCount}
+        />
+      )}
+
+      {/* Success Toast */}
+      <SuccessToast
+        isVisible={showSuccessToast}
+        message={successMessage}
+        onClose={handleCloseSuccessToast}
+        duration={3000}
+      />
+
+      {/* Error Toast */}
+      <ErrorToast
+        isVisible={showErrorToast}
+        message={errorMessage}
+        onClose={handleCloseErrorToast}
+        duration={5000}
+      />
     </div>
   );
 }

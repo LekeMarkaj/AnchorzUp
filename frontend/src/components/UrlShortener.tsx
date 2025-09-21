@@ -4,9 +4,10 @@ import { shortUrlApi, ShortUrlResponse } from '../services/api';
 
 interface UrlShortenerProps {
   onUrlCreated: (url: ShortUrlResponse) => void;
+  onError: (error: string) => void;
 }
 
-const UrlShortener: React.FC<UrlShortenerProps> = ({ onUrlCreated }) => {
+const UrlShortener: React.FC<UrlShortenerProps> = ({ onUrlCreated, onError }) => {
   const [originalUrl, setOriginalUrl] = useState('');
   const [expiresAt, setExpiresAt] = useState('');
   const [selectedExpirationLabel, setSelectedExpirationLabel] = useState('Add expiration date');
@@ -58,7 +59,9 @@ const UrlShortener: React.FC<UrlShortenerProps> = ({ onUrlCreated }) => {
       setExpiresAt('');
       setSelectedExpirationLabel('Add expiration date');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to create short URL');
+      const errorMessage = err.response?.data?.message || 'Failed to create short URL';
+      setError(errorMessage);
+      onError(errorMessage);
     } finally {
       setIsLoading(false);
     }
