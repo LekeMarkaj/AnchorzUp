@@ -37,7 +37,7 @@ public class ShortUrlController : ControllerBase
         {
             return BadRequest(new { message = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return StatusCode(500, new { message = "An error occurred while creating the short URL" });
         }
@@ -53,7 +53,7 @@ public class ShortUrlController : ControllerBase
             var result = await _mediator.Send(query);
             return Ok(result);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return StatusCode(500, new { message = "An error occurred while retrieving short URLs" });
         }
@@ -68,7 +68,7 @@ public class ShortUrlController : ControllerBase
             await _mediator.Send(command);
             return NoContent();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return StatusCode(500, new { message = "An error occurred while deleting the short URL" });
         }
@@ -83,7 +83,7 @@ public class ShortUrlController : ControllerBase
             var qrCodeBytes = await _mediator.Send(query);
             return File(qrCodeBytes, "image/png");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return StatusCode(500, new { message = "An error occurred while generating QR code" });
         }

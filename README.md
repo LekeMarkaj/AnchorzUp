@@ -45,7 +45,7 @@ Before running this project, ensure you have the following installed:
 
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 - [Node.js](https://nodejs.org/) (v16 or higher)
-- [Docker](https://www.docker.com/) (optional, for containerization)
+- [Docker](https://www.docker.com/) 
 - [Git](https://git-scm.com/)
 
 ## 🛠️ Setup Instructions
@@ -94,7 +94,7 @@ The application uses SQLite database which is created automatically.
 Run the complete application with Docker:
 
 ```bash
-docker-compose --profile prod up -d
+docker-compose up -d
 ```
 
 This will start:

@@ -20,7 +20,7 @@ RUN dotnet build "AnchorzUp.API.csproj" -c Release -o /app/build
 
 # Publish the application
 FROM build AS publish
-RUN dotnet publish "AnchorzUp.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "AnchorzUp.API.csproj" -c Release -o /app/publish
 
 # Build frontend with Node.js
 FROM node:18-alpine AS frontend-build
