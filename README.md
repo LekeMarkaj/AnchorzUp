@@ -10,6 +10,14 @@ Before running this project, ensure you have the following installed:
 - [Node.js](https://nodejs.org/) (v16 or higher)
 - [Git](https://git-scm.com/)
 
+### Install Entity Framework Core Tools
+
+After cloning the repository, install the EF Core tools globally:
+
+```bash
+dotnet tool install --global dotnet-ef
+```
+
 ## 🛠️ Setup Instructions
 
 ### 1. Clone the Repository
