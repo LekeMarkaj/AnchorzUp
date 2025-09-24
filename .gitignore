@@ -14,9 +14,6 @@ obj/
 *.swo
 *~
 
-# Entity Framework
-Migrations/
-
 # Node.js
 node_modules/
 npm-debug.log*
